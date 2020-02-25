@@ -39,7 +39,7 @@ class java.util.HashMap
 하지만 코틀린 컬렉션에서는 자바보다 더 많은 기능을 쓸 수 있다.
 <br>
 예를 들면 리스트의 마지막 원소를 가져오거나 수로 이루어진 컬렉션에서 최댓값을 찾을 수 있다.
-```kotli
+```kotlin
 >>> val strings = listOf("first", "second", "fourteenth")
 >>> printl(strings.last())
 fourteenth
