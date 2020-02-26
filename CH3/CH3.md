@@ -266,6 +266,7 @@ val c = "Kotlin".last()
 한 파일 안에서 여러 패키지에 속해이는 동일 함수들을 가져와 사용해야 한다면 충돌을 막을 수 있다.
 <br>
 <br>
+
 #### 3.3.2 자바에서 확장 함수 호출
 내부적으로 확장 함수는 수신 객체를 첫 번째 인자로 받는 정적 메소드다.  
 그래서 확장 함수를 호출해도 다른 어댑터 객체나 실행 시점 부가 비용이 들지 않는다.  
@@ -274,3 +275,42 @@ val c = "Kotlin".last()
 ```java
 char c = StringUtilKt.lastChar("java");
 ```
+<br>
+
+#### 3.3.3 확장 함수로 유틸리티 함수 정의
+아래는 joinToString 함수의 최종 버전이다.
+```kotlin
+fun <T> Collection<T>.joinToString(
+    separator: String = ", ",
+    prefix: String = "",
+    postfix: String = ""
+) : String {
+    val result = StringBuilder(prefix)
+
+    for ((index, element) in this.withIndex()){
+        if(index > 0) result.append (separator)
+        result.append(element)
+    }
+
+    result.append(postfix)
+    return result.toString()
+}
+
+>>> val list = listOf(1,2,3)
+>>> println(list.joinToString(separator = "; ",
+...     prefix = "(", postfix - ")"))
+(1; 2; 3)
+```
+구체적인 타입을 수신 객체 타입으로 지정할 수도 있다.  
+아래는 문자열의 컬렉션에 대해서만 호출할 수 있는 join 함수를 정의하고 있다.
+```kotlin
+fun Collection<String>.join(
+    separator: String = ", ",
+    prefix: String = "",
+    postfix: String = ""
+) = joinToString(separator, prefix, postfix)
+
+>>> println(listOf("one", "two", "eigth").join(" "))
+one tow eigth
+```
+
