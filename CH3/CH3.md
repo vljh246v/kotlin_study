@@ -48,3 +48,157 @@ fourteenth
 println(numbers.max())
 14
 ```
+<br>
+
+###  3.2 함수를 호출하기 쉽게 만들기
+
+자바 기본적인 toString
+```kotlin
+>>> val list = listOf(1,2,3)
+>>> println(list)
+[1, 2, 3]
+```
+만약 디폴트 구현과 달리 (1;2;3) 같이 나타내고 싶다면??  
+joinToString() 함수는 전달받은 컬랙션에 구분자, 접두사, 접미사를 추가한다.
+```kotlin
+fun <T> joinToString(
+    collection: Collection<T>,
+    separator: String,
+    prefix: String,
+    postfix: String
+) : String {
+    val result = StringBuilder(perfix)
+
+    for((index, element) in collection.withIndex()) {
+        if(index > 0) result.append(separator)
+        result.append(element)
+    }
+
+    result.append(postfix)
+    return result.toString()
+}
+```
+제네릭 문법은 자바와 비슷하다.  
+이 함수를 동작시키면 아래와 같은 결과를 출력한다.
+```kotlin
+>>> val list = listOf(1,2,3)
+>>> println(joinToString(list, ";", "(", ")"))
+(1;2;3)
+```
+하지만 이 함수를 어떻게 하면 조금 덜 번잡하게 만들 수 있을까?  
+함수 호출시 네 인자를 매번 전달해야 할까?  
+<br>
+#### 3.2.1 이름 붙인 인자
+해결하고픈 첫 번째 문제는 호출 부분의 가독성이다.  
+예를 들어서 joinToString 호출을 살펴보자
+```kotlin
+joinToString(collection, " ", " ", ".")
+```
+전달된 각 문자열이 어떤 역할을 하는지 구분이 가능한가?  
+이런 문제점들은 특히 의미없는 flag 값 전달에서 문제를 발생시킨다.  
+일부 자바 코딩 스타일에서는 boolean 대신 enum 타입을 권장한다.  
+또 어디에서는 다음과 같이 파라미터 이름을 주석에 넣으라고 요구하기도 한다.
+```java
+joinToString(collection, /* separator */ " ", /* prefix */ " ", /* postfix */ ".")
+```
+코틀린에서는 다음과 같이 더 잘 할 수 있다.
+```kotlin
+joinToString(collection, separator = " ", prefix = " ", postfix = ".")
+```
+코틀린에서는 전달 인자 중 일부(혹은 전부)의 이름을 명시할 수 있다.  
+다만 어느 하나라도 이름을 명시한다면 혼동을 막기 위해 그 뒤에 오는 모든 인자는 이름을 명시하여야 한다.
+> 불행이도 자바로 작성한 코드를 호출할 때는 이름 붙인 인자를 사용할 수 없다.
+
+<br>
+
+#### 3.2.2 디폴트 파라미터 값
+자바에서는 일부 클래스에서 오버로딩한 메소드가 너무 많아진다는 문제가 있다.  
+오버로딩 메소드들은 하위 호환, 확장등 여러 가지 이유로 만들어진다.  
+하지만 이는 모호함을 동반한다.  
+모틀린에서는 함수 선언에서 파라미터의 디폴트 값을 지정할 수 있다.  
+디폴트 값을 통해 joinToString 함수를 개선해보자.
+```kotlin
+fun <T> joinToString(
+    collection: Collection<T>,
+    separator: String = ", ",
+    prefix: String = "",
+    postfix: String = ""
+) : String {
+    val result = StringBuilder(perfix)
+
+    for((index, element) in collection.withIndex()) {
+        if(index > 0) result.append(separator)
+        result.append(element)
+    }
+
+    result.append(postfix)
+    return result.toString()
+}
+```
+이제 함수를 호출할 때 모든 인자를 쓸 수도 있고, 일부를 생략할 수도 있다.
+```kotlin
+>>> joinToString(list, ", ", "", "")
+1, 2, 3
+>>> joinToString(list)
+1, 2, 3
+>>> joinToString(list, "; ")
+1; 2; 3
+```
+이름 붙은 인자를 사용하는 경우에는 인자 목록의 중간에 있는 인자 생략도 가능하다.
+```kotlin
+>>> joinToString(list, postfix - ";", prefix = "# ")
+# 1, 2, 3;
+```
+또한 이러한 함수들을 꼭 어떠한 클래스 안에 선언해야하는 것은 아니다.  
+코틀린에서는 함수를 클래스 안에 선언할 필요가 전혀 없다.  
+<br>
+#### 3.2.3 정적인 유틸리티 클래스 없애기: 최상위 함수와 프로퍼티
+
+개발을 하다보면 어느 한 클래스에 포함시키기 어려운 코드가 생긴다.  
+그 결과 정적 메소드를 모아두는 역할만 담당하며, 특별한 상태나 인스턴스 메소드는 없는 클래스가 생겨난다.  
+코틀린에서는 이런 무의미한 클래스가 필요 없다.  
+대신 함수를 직ㅈ버 소스 파일의 최상위 수준, 모든 클래스의 밖에 위치시키면 된다.  
+해당 함수를 사용하고 싶을 때에는 그 함수가 정의된 패키지를 임포트해서 사용하면 된다.  
+joinToString 함수를 strings 패키지에 직접 넣어보자.
+```kotlin
+package strings
+
+fun joinToString(...): String {...}
+```
+JVM은 클래스 안에 들어 있는 코드만을 실행할 수 있기 때문에 컴파일러는 이 파일을 컴파일할 때 새로운 클래스를 정의해준다.  
+해당 메소드가 join.kt 라는 코틀린 파일에 들어있다면 아래와 같은 컴파일 결과가 나온다.  
+```java
+/* 자바 */
+package strings;
+
+public class JoinKt {
+    public static String joinToString(...) {...}
+}
+```
+코틀린 컴파일러가 생성하는 클래스의 이름은 최상위 함수가 들어있던 코틀린 소스 파일 이름과 대응한다.  
+코틀린 파일의 모든 최상위 함수는 이 클래스의 정적(static) 메소드가 된다.  
+따라서 자바에서는 joinToString을 호출하기 쉽다.
+```java
+import srtrings.JoinKt;
+
+JoinKt.joinToString(list, ", ", "", "")
+```
+<br>
+함수와 마찬가지로 프로퍼티또한 파일의 최상위 수준에 놓을 수 있다.  
+최상위 프로퍼티를 활용해 코드에 상수를 추가할 수 있다.
+
+```kotlin
+val UNIX_LINE_SEPARATOR = "\n"
+```
+기본적으로 최상위 프로퍼티도 다른 모든 프로퍼티처럼 접근자 메소드를 통해 자바 코드에 노출된다.  
+하지만 상수처럼 사용하기 원한다면 자연스럽지 못할 수 있다.  
+그렇기 때문에 상수를 public static final 필드로 컴파일 해야 한다.  
+이때 const  변경자를 추가해주면 프로퍼티를 public static final 필드로 컴파일하게 만들 수 있다.  
+```kotlin
+const val UNIX_LINE_SEPARATOR = "\n"
+```
+이 코드는 자바 코드와 동등한 바이트코드를 만들어낸다.
+```java
+/* 자바 */
+public static final String UNIX_LINE_SEPARATOR = "\n"
+```
