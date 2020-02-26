@@ -202,3 +202,42 @@ const val UNIX_LINE_SEPARATOR = "\n"
 /* 자바 */
 public static final String UNIX_LINE_SEPARATOR = "\n"
 ```
+<br>
+
+### 3.3 메소드를 다른 클래스에 추가: 확장 함수와 확장 프로퍼티
+기존 코드와 코틀린 코드를 자연스럽게 통합하는 것은 코틀린의 핵심 목표 중 하나다.  
+자바 API를 재작성하지 않고도 코틀린이 제공하는 여러 편리한 기능을 사용할 수 있다면?  
+확장 함수를 사용하자.  
+확장 함수는 어떤 클래스의 멤버 메소드인 것처럼 호출할 수 있지만 그 클래스의 밖에 선언된 함수다.  
+어떤 문자열의 마지막 문자를 돌려주는 메소드를 추가해보자.  
+```kotlin
+package strings
+
+fun String.lastChar () : Char = this.get(this.length - 1)
+```
+확장 함수를 만들기 위해해서는 추가하려는 함수 이름 앞에 그 함수가 확장할 클래스의 이름을 덧붙이기만 하면 된다.  
+클래스의 이름을 수신 객체 타입이라 부르며, 확장 함수가 호출되는 대상이 되는 값을 수신 객체라고 부른다.
+
+```kotlin
+ /* 수신 객체 타입 (String) */ /* 수신 객체 (this) */
+fun String.lastChar () : Char = this.get(this.length - 1)
+```
+이 함수를 호출하는 구문은 다른 일반 클래스 멤버를 호출하는 구문과 똑같다.
+```kotlin
+>>> println("Kotlin".lastChar())
+n
+```
+이 예제에서는 String이 수신 객체 타입, "Kotlin" 이 수신 객체이다.  
+클래스를 직접 작성한 것도 아니고 String 클래스의 소스코드를 소유한 것도 아니지만, 원하는 메소드를 String 클래스에 추가할 수있다.  
+자바 클래스로 컴파일한 클래스 파일이 있는 한 그 클래스에 원하는 대로 확장을 추가할 수 있다.  
+<br>
+일반 메소드의 본문엣 this를 사용할 때와 마찬가지로 확장 함수 본문에도 this를 쓸 수 있다.  
+그리고 일반 메소드와 마찬가지로 확장 함수 본문에서도 this를 생략할 수 있다.
+```kotlin
+package strings
+
+fun String.lastChar () : Char = get(length - 1)
+```
+확장 함수 내부에서도 수신 객체의 메소드나 프로퍼티를 사용할 수 있다.  
+하지만 이것이 캡슐화를 깨지는 않는다.  
+private 멤버나 protected 멤버는 사용할 수 없다.
