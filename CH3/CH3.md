@@ -379,3 +379,68 @@ Kotlin!
 <br>
 
 ### 3.4 컬렉션 처리: 가변 길이 인자, 중위 함수 호출, 라이브러리 지원
+* vararg 키워드를 사용하면 호출 시 인자 개수가 달라질 수 있는 함수를 정의할 수 있다.
+* 중위 함수 호출 구문을 사용하면 인자가 하나뿐인 메소드를 간편하게 호출할 수 있다.
+* 그조 분해 선선을 사용하면 복합적인 값을 분해해서 여러 변수에 나눠 담을 수 있다.  
+
+
+#### 3.4.1 자바 컬렉션 API 확장
+
+아래는 코틀린에서 리스트의 마지막 원소를 가져오는 예제다
+```kotlin
+>>> val strings: List<String> = listOf("first", "second", "fourteenth")
+>>> strings.last()
+fourteenth
+>>> val numbers: Collection<Int> = setOf(1, 14, 2)
+>>> numbers.max()
+14
+```
+여기서 사용된 last, max 메소드 모두 확장함수기 때문에 기존 자바 컬렉션 API 확장이 가능했다.  
+```kotlin
+fun <T> List<T>.last(): T { /* 마지막 원소 반환 */ }
+fun Collection<Int>.max(): Int { /* 컬렉션의 최댓값을 찾음 */ }
+```
+<br>
+
+#### 3.4.2 가변 인자 함수: 인자 개수가 달리질 수 있는 함수 정의
+```java
+/* 자바의 가변인자 */
+void fun(String...str) {}
+```
+코틀리는 자바 문법과 다르게 타입뒤에 ... 붙이는 대신 파라미터 앞에 vararg 변경자를 붙인다.  
+```kotlin
+fun listOf<T>(vararg values: T): List<T> {...}
+```
+이미 배열에 있는 값을 넘길때 자바는 그냥 넘길 수 있지만 코틀린은 명시적으로 풀어서 넘겨주어야 한다.  
+기술적으로는 스프레드 연산자가 그런 작업을 해준다.
+```kotlin
+fun main(args: Array<String>) {
+    val list = listOf("args: ", *args)
+    println(list)
+}
+```
+<br>
+
+#### 3.4.3 값의 쌍 다루기: 중위 호출과 구조 분해 해석
+맵을 만들기 위해서 mapOf 함수를 사용한다.
+```kotlin
+val map = mapOf(1 to "one", 7 to "seven", 53 to "fifty-three")
+```
+여기서 to라는 단어는 코틀린 키워드가 아니다.  
+중위 호출이라는 방식으로 to 라는 일반 메소드를 호출하는 것이다.  
+```kotlin
+1.to("one")
+1 to "one"
+```
+인자가 하나뿐인 메소드나 인자가 하나뿐인 확장 함수에서 중위 호출을 사용할 수 있다.  
+중위 호출에 사용하게 허용하고 싶으면 infix 변경자를 함수 선언 앞에 추가해야 한다.
+```kotlin
+infix fun Any.to(other: Any) = Pair(this, other)
+```
+Pair 는 코틀린 표준 라이브러리 클래스이다.  
+이름대로 두 원소로 이루어진 순서쌍을 표현한다.  
+```kotlin
+val (number, name) = 1 to "one"
+```
+이런 기능을 구조 분해 선언 이라고 부른다.
+<br>
