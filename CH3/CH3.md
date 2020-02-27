@@ -313,4 +313,69 @@ fun Collection<String>.join(
 >>> println(listOf("one", "two", "eigth").join(" "))
 one tow eigth
 ```
+<br>
 
+#### 3.3.4 확장 함수는 오버라이드할 수 없다.
+확장 함수는 오버라이드할 수 없다.  
+View와 그 하위 클래스인 Button이 있는데, Button이 상위 클래스의 click 함수를 오버라이드하는 경우를 생각해보자.
+```kotlin
+open clss View {
+    open fun click() = println("View clicked")
+}
+
+class Button : View() {
+    override fun click() = println("Button clicked")
+}
+```
+click 메소드를 Button 클래스가 오버라이드 했다면 실제로는 Button 이 오버라이드한 click가 호출된다.
+```kotlin
+>>> val view: View = Button()
+>>> view.click()
+Button clicked
+```
+하지만 확장함수는 이렇게 동작하지 않는다.
+확장함수는 호출할 때 수신 객체로 지정한 변수의 정적 타입에 의해 어떤 확장 함수가 호출될지 결정된다. 
+```kotlin
+fun View.showOff() = println("I'm a view")
+fun Button.showOff() = println("I'm a button!")
+>>> val view: View = Button()
+>>> view.showOff()
+I'm a view
+
+```
+위 경우에는 view 타입이 View 이기 떄문에 무조건 View의 확장 함수가 호출된다.  
+수신 객체를 인자로 하는 자바 메소드로 컴파일 된다는 것을 기억한다면 당연한 동작이다.
+```java
+/* 자바 */
+>>> View view = new Button();
+>>> ExtensionsKt.showOff(view);
+I'm a view
+```
+추가로 확장 함수와 동일한 이름의 멤버 함수가 있다면 멤버 변수를 호출한다.  
+<br>
+
+#### 3.3.5 확장 프로퍼티
+확장 프로퍼티를 사용하면 기존 클래스 객체에 대한 프로퍼티 형식의 구문으로 사용할 수 있는 API를 추가할 수 있다.  
+확장 프로퍼티는 뒷받침하는 필드, 즉 값을 저장해두는 필드가 없기때문에 기본 게터 구현을 꼭 정의해야 한다.
+```kotlin
+val String.lastChar: Char
+    get() = get(length - 1) 
+```
+StringBuilder 맨 마지막 문자는 변경 가능하므로 프로퍼티를 var 로 만들 수 있다.
+```kotlin
+var StringBuilder.lastChar: Char
+    get() = get(length - 1)
+    set(value: Char) {
+        this.setCharAt(lemgth - 1, value)
+    }
+
+>>> println("Kotlin".lastChar)
+n
+>>> val sb = StringBuilder("Kotlin?")
+>>> sb.lastChar = '!'
+>>> println(sb)
+Kotlin!
+```
+<br>
+
+### 3.4 컬렉션 처리: 가변 길이 인자, 중위 함수 호출, 라이브러리 지원
